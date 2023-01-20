@@ -8,17 +8,17 @@
 #CREDIT:;
 #MUSIC:MimisMicrogames.ogg;
 #BANNER:MimisMicrogames.png;
-#BACKGROUND:;
+#BACKGROUND:MimisMicrogamesBg.png;
 #CDTITLE:;
 #SAMPLESTART:41.755;
 #SAMPLELENGTH:12.794;
 #SELECTABLE:YES;
-#OFFSET:-0.266;
+#OFFSET:0.000;
 #BPMS:0.000=150.000;
 #STOPS:;
 #DISPLAYBPM:*;
 #BGCHANGES:;
-#FGCHANGES: 4.000=./default.lua=1.000=0=0=1=====;
+#FGCHANGES:0.000=./default.lua=1.000=0=0=1;
 //--------------- dance-single - bogo ----------------
 #NOTES:
      dance-single:
