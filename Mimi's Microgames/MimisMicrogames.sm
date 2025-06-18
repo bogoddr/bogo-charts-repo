@@ -18,7 +18,7 @@
 #STOPS:;
 #DISPLAYBPM:*;
 #BGCHANGES:;
-#FGCHANGES:0.000=./default.lua=1.000=0=0=1;
+#FGCHANGES:0.000=./chartest.lua=1.000=0=0=1;
 //--------------- dance-single - bogo ----------------
 #NOTES:
      dance-single:
