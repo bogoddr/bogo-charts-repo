@@ -51,6 +51,23 @@ main[#main+1] = Def.Sprite{
     end,
 }
 
+main[#main+1] = Def.Sound{
+   File="PikaPika.ogg",
+   SupportRateChanging=true,
+   OnCommand=function(self)
+      self:play()
+      self.currSoundRate = 1.0;
+   end,
+   StepMessageCommand=function(self, params)
+        if params.PlayerNumber == 'PlayerNumber_P1' then
+            self.currSoundRate = self.currSoundRate + 0.1
+            self:get():speed(self.currSoundRate)
+        else
+            SM( 'p2 ' .. params.Column )
+        end
+   end,
+}
+
 -- keep-alive Actor
 main[#main+1] = Def.Actor{ InitCommand=function(self) self:sleep(999) end }
 
