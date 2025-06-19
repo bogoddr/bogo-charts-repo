@@ -15,19 +15,14 @@ local main = Def.ActorFrame{
         end)
     end,
     StepMessageCommand=function(self, params)
-        if params.PlayerNumber == 'PlayerNumber_P1' then
-            SM( 'p1 ' .. params.Column )
-        else
-            SM( 'p2 ' .. params.Column )
-        end
-   end,
+        
+    end,
 }
 
 main[#main+1] = Def.Sprite{
     Name="Player1",
     Texture="wily 6x1.png",
     InitCommand=function(self)
-        self:name("dog")
         self.isJumping = false
         self.jumpHeight = 0
         self.jumpVelocity = 0;
@@ -43,10 +38,13 @@ main[#main+1] = Def.Sprite{
         --self:Center():diffusealpha(1)
     end,
     StepMessageCommand=function(self, params)
-        if params.PlayerNumber == 'PlayerNumber_P1' then
+        if params.PlayerNumber == 'PlayerNumber_P1' and params.Column == 2 and not self.isJumping then
             self.isJumping = true;
             self.jumpHeight = 0;
             self.jumpVelocity = 10;
+            self:SetStateProperties({
+                { Frame=0,  Delay=duration_between_frames},
+            })
         else
             --SM( 'p2 ' .. params.Column )
         end
@@ -54,7 +52,7 @@ main[#main+1] = Def.Sprite{
     CustomUpdateCommand=function(self)
         self:xy(SCREEN_CENTER_X, SCREEN_CENTER_Y - self.jumpHeight)
         self.jumpHeight = self.jumpHeight + (self.jumpVelocity * gameState.lastDelta * 10)
-        self.jumpVelocity = self.jumpVelocity - gameState.lastDelta * 10
+        self.jumpVelocity = self.jumpVelocity - gameState.lastDelta * 20
         if self.jumpHeight < 0 then
             self.isJumping = false
             self.jumpHeight = 0
