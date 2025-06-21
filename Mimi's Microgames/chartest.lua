@@ -112,6 +112,26 @@ main[#main+1] = Def.Sound{
    end,
 }
 
+local InputHandler = function( event )
+    SM(event)
+	-- do something cool with the event table in here :)
+	-- the details of the event table are documented below
+
+	-- example:
+	-- show the GameButton that was most recently pressed/held
+	if event.type ~= "InputEventType_Release" then
+		SM( event.GameButton )
+	end
+
+	return false
+end
+
+main[#main+1] = Def.ActorFrame{
+	OnCommand=function(self)
+		SCREENMAN:GetTopScreen():AddInputCallback( InputHandler )
+	end
+}
+
 -- keep-alive Actor
 main[#main+1] = Def.Actor{ InitCommand=function(self) self:sleep(999) end }
 
@@ -126,13 +146,11 @@ local function linestrip_demo(x, y)
 	-- 7 - 6 - 5
 	local verts= {
 		{{-40, -40, 0}, Color.Red},
-		{{0, -40, 0}, Color.Blue},
-		{{40, -40, 0}, Color.Green},
-		{{40, 0, 0}, Color.Yellow},
-		{{40, 40, 0}, Color.Orange},
+		{{0, -40, 0}, Color.Orange},
+		{{40, -40, 0}, Color.Yellow},
+		{{40, 0, 0}, Color.Green},
+		{{40, 40, 0}, Color.Blue},
 		{{0, 40, 0}, Color.Purple},
-		{{-40, 40, 0}, Color.Black},
-		{{-40, 0, 0}, Color.White},
 	}
 	return Def.ActorMultiVertex{
 		Name= "AMV_LineStrip",
