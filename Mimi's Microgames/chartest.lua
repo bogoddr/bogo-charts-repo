@@ -1,5 +1,5 @@
 local gameState = {
-    t = 0,
+    tick = 0,
     lastDelta = 0,
 }
 
@@ -7,6 +7,7 @@ local main = Def.ActorFrame{
     InitCommand=function(self)
         self:SetUpdateFunction(function (a,delta)
             gameState.lastDelta = delta
+            gameState.tick = gameState.tick + 1
             self:RunCommandsOnChildren( function(child) 
                 if(child:GetCommand("CustomUpdate")) then
                     child:queuecommand( "CustomUpdate" )
@@ -113,5 +114,74 @@ main[#main+1] = Def.Sound{
 
 -- keep-alive Actor
 main[#main+1] = Def.Actor{ InitCommand=function(self) self:sleep(999) end }
+
+local function linestrip_demo(x, y)
+	-- Minimum verts: 2
+	-- Verts per group: 1
+	-- Vert diagram:
+	-- 1 - 2 - 3
+	--         |
+	-- 8       4
+	-- |       |
+	-- 7 - 6 - 5
+	local verts= {
+		{{-40, -40, 0}, Color.Red},
+		{{0, -40, 0}, Color.Blue},
+		{{40, -40, 0}, Color.Green},
+		{{40, 0, 0}, Color.Yellow},
+		{{40, 40, 0}, Color.Orange},
+		{{0, 40, 0}, Color.Purple},
+		{{-40, 40, 0}, Color.Black},
+		{{-40, 0, 0}, Color.White},
+	}
+	return Def.ActorMultiVertex{
+		Name= "AMV_LineStrip",
+		InitCommand=
+			function(self)
+				self:visible(false)
+				self:xy(x, y)
+				self:SetDrawState{Mode="DrawMode_LineStrip"}
+
+				self:visible(true)
+                self:SetLineWidth(1)
+				self:SetDrawState{First= 1, Num= -1}
+				--verts[1][1][2]= -40
+				--verts[4][1][1]= 40
+				--verts[6][1][2]= 40
+				--verts[8][1][1]= -40
+                
+				self:SetLineWidth(10)
+				self:SetVertices(verts)
+				self:finishtweening()
+				--self:queuecommand("FirstMove")
+				--self:queuecommand("SecondMove")
+			end,
+		FirstMoveCommand=
+			function(self)
+				self:linear(1)
+				verts[1][1][2]= verts[1][1][2]+20
+				verts[4][1][1]= verts[4][1][1]+20
+				verts[6][1][2]= verts[6][1][2]-10
+				verts[8][1][1]= verts[8][1][1]+10
+				self:SetLineWidth(20)
+				self:SetVertices(verts)
+			end,
+		SecondMoveCommand=
+			function(self)
+				self:linear(1)
+				self:SetDrawState{First= 3, Num= 4}
+			end,
+        CustomUpdateCommand=
+            function(self)
+                if gameState.tick % 60 == 0 then
+				    self:linear(1)
+                    verts[1][1][2] = gameState.tick
+				    self:SetVertices(verts)
+                end
+            end,
+	}
+end
+
+main[#main+1] = linestrip_demo(400,400);
 
 return main;
