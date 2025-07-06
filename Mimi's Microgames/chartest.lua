@@ -8,16 +8,26 @@ local main = Def.ActorFrame{
         self:SetUpdateFunction(function (a,delta)
             gameState.lastDelta = delta
             gameState.tick = gameState.tick + 1
-            self:RunCommandsOnChildren( function(child) 
-                if(child:GetCommand("CustomUpdate")) then
-                    child:queuecommand( "CustomUpdate" )
-                end
-            end)
         end)
     end,
     StepMessageCommand=function(self, params)
         
     end,
+}
+
+-- keep-alive Actor
+main[#main+1] = Def.Actor{ InitCommand=function(self) self:sleep(999) end }
+
+main[#main+1] = Def.ActorFrame{
+	OnCommand=function(self)
+		SCREENMAN:GetTopScreen():AddInputCallback( function( event )
+            --SM(event.type)
+            --if event.type ~= "InputEventType_Release" then
+            --	SM( event.GameButton )
+            --end
+            return false
+        end )
+	end
 }
 
 main[#main+1] = Def.Sprite{
@@ -27,14 +37,13 @@ main[#main+1] = Def.Sprite{
    end
 }
 
-local duration_between_frames = 0.2
 main[#main+1] = Def.Sprite{
     Name="Player1",
     Texture="char 5x1.png",
     InitCommand=function(self)
+        local duration_between_frames = 0.2
         self.isJumping = false
-        self.jumpHeight = 0
-        self.jumpVelocity = 0;
+        self.jumpTimer = 0;
         self:SetStateProperties({
             { Frame=0,  Delay=duration_between_frames},
             { Frame=1,  Delay=duration_between_frames},
@@ -43,35 +52,16 @@ main[#main+1] = Def.Sprite{
         })
     end,
     OnCommand=function(self)
-        --self:Center():diffusealpha(1)
+        self:Center():diffusealpha(1)
     end,
     StepMessageCommand=function(self, params)
         if params.PlayerNumber == 'PlayerNumber_P1' and params.Column == 2 and not self.isJumping then
             self.isJumping = true;
-            self.jumpHeight = 0;
-            self.jumpVelocity = 50;
+            self.jumpTimer = 0;
+            self:decelerate( 1 ):y( _screen.h/2 - 100 )
+            self:accelerate( 1 ):y( _screen.h/2 )
         else
             --SM( 'p2 ' .. params.Column )
-        end
-    end,
-    CustomUpdateCommand=function(self)
-        self:xy(SCREEN_CENTER_X, SCREEN_CENTER_Y - self.jumpHeight)
-        if self.isJumping then
-            self:SetStateProperties({
-                { Frame=self.jumpVelocity > 0 and 3 or 4,  Delay=0},
-            })
-            self.jumpHeight = self.jumpHeight + (self.jumpVelocity * gameState.lastDelta * 10)
-            self.jumpVelocity = self.jumpVelocity - gameState.lastDelta * 120
-        end
-        if self.jumpHeight < 0 and self.isJumping then
-            self.isJumping = false
-            self.jumpHeight = 0
-            self:SetStateProperties({
-                { Frame=0,  Delay=duration_between_frames},
-                { Frame=1,  Delay=duration_between_frames},
-                { Frame=0,  Delay=duration_between_frames},
-                { Frame=2,  Delay=duration_between_frames}
-            })
         end
     end,
 }
@@ -80,6 +70,7 @@ main[#main+1] = Def.Sprite{
     Name="coachleft",
     Texture="coach 6x1.png",
     InitCommand=function(self)
+        self:xy(SCREEN_CENTER_X-100, SCREEN_CENTER_Y)
         local duration_between_frames = 0.2
         self:SetStateProperties({
             { Frame=0,  Delay=duration_between_frames},
@@ -89,9 +80,6 @@ main[#main+1] = Def.Sprite{
             { Frame=4,  Delay=duration_between_frames},
             { Frame=5,  Delay=duration_between_frames}
         })
-    end,
-    CustomUpdateCommand=function(self)
-        self:xy(SCREEN_CENTER_X-100, SCREEN_CENTER_Y)
     end,
 }
 
@@ -111,29 +99,6 @@ main[#main+1] = Def.Sound{
         end
    end,
 }
-
-local InputHandler = function( event )
-    SM(event)
-	-- do something cool with the event table in here :)
-	-- the details of the event table are documented below
-
-	-- example:
-	-- show the GameButton that was most recently pressed/held
-	if event.type ~= "InputEventType_Release" then
-		SM( event.GameButton )
-	end
-
-	return false
-end
-
-main[#main+1] = Def.ActorFrame{
-	OnCommand=function(self)
-		SCREENMAN:GetTopScreen():AddInputCallback( InputHandler )
-	end
-}
-
--- keep-alive Actor
-main[#main+1] = Def.Actor{ InitCommand=function(self) self:sleep(999) end }
 
 local function linestrip_demo(x, y)
 	-- Minimum verts: 2
