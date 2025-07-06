@@ -1,6 +1,13 @@
 local gameState = {
     tick = 0,
     lastDelta = 0,
+    tempo = 1,
+    player1 = {
+        -- todo
+    },
+    player2 = {
+        -- todo
+    }
 }
 
 local main = Def.ActorFrame{
@@ -60,8 +67,14 @@ main[#main+1] = Def.Sprite{
             self.jumpTimer = 0;
             self:decelerate( 1 ):y( _screen.h/2 - 100 )
             self:accelerate( 1 ):y( _screen.h/2 )
+            self.isJumping = false;
         else
             --SM( 'p2 ' .. params.Column )
+        end
+
+        if params.PlayerNumber == 'PlayerNumber_P1' and params.Column == 1 then
+            local greenquad_af = self:GetParent():GetChild( "LineStrip" )
+            greenquad_af:queuecommand( "CustomUpdate" ) 
         end
     end,
 }
@@ -118,7 +131,7 @@ local function linestrip_demo(x, y)
 		{{0, 40, 0}, Color.Purple},
 	}
 	return Def.ActorMultiVertex{
-		Name= "AMV_LineStrip",
+		Name= "LineStrip",
 		InitCommand=
 			function(self)
 				self:visible(false)
@@ -139,28 +152,11 @@ local function linestrip_demo(x, y)
 				--self:queuecommand("FirstMove")
 				--self:queuecommand("SecondMove")
 			end,
-		FirstMoveCommand=
-			function(self)
-				self:linear(1)
-				verts[1][1][2]= verts[1][1][2]+20
-				verts[4][1][1]= verts[4][1][1]+20
-				verts[6][1][2]= verts[6][1][2]-10
-				verts[8][1][1]= verts[8][1][1]+10
-				self:SetLineWidth(20)
-				self:SetVertices(verts)
-			end,
-		SecondMoveCommand=
-			function(self)
-				self:linear(1)
-				self:SetDrawState{First= 3, Num= 4}
-			end,
         CustomUpdateCommand=
             function(self)
-                if gameState.tick % 60 == 0 then
-				    self:linear(1)
-                    verts[1][1][2] = gameState.tick
-				    self:SetVertices(verts)
-                end
+                self:linear(1)
+                verts[1][1][2] = gameState.tick
+                self:SetVertices(verts)
             end,
 	}
 end
