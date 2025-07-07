@@ -1,7 +1,6 @@
 local gameState = {
+    t = 0,
     tick = 0,
-    lastDelta = 0,
-    tempo = 1,
     player1 = {
         -- todo
     },
@@ -13,8 +12,18 @@ local gameState = {
 local main = Def.ActorFrame{
     InitCommand=function(self)
         self:SetUpdateFunction(function (a,delta)
-            gameState.lastDelta = delta
             gameState.tick = gameState.tick + 1
+            gameState.t = gameState.t + delta
+            if (gameState.t < 0) then
+                gameState.t = 0
+            end
+            if (gameState.t > 1) then
+                gameState.t = math.mod(gameState.tick, 1)
+            end
+            --if (math.mod(gameState.tick, 1) == 0) then
+                local lineStrip = self:GetChild( "LineStrip" )
+                lineStrip:queuecommand( "CustomUpdate" ) 
+            --end
         end)
     end,
     StepMessageCommand=function(self, params)
@@ -62,21 +71,14 @@ main[#main+1] = Def.Sprite{
         self:Center():diffusealpha(1)
     end,
     StepMessageCommand=function(self, params)
-        if params.PlayerNumber == 'PlayerNumber_P1' and params.Column == 2 and not self.isJumping then
-            self.isJumping = true;
-            self.jumpTimer = 0;
-            self:decelerate( 1 ):y( _screen.h/2 - 100 )
-            self:accelerate( 1 ):y( _screen.h/2 )
-            self.isJumping = false;
-        else
-            --SM( 'p2 ' .. params.Column )
-        end
-
-        if params.PlayerNumber == 'PlayerNumber_P1' and params.Column == 1 then
-            local greenquad_af = self:GetParent():GetChild( "LineStrip" )
-            greenquad_af:queuecommand( "CustomUpdate" ) 
-        end
     end,
+    JumpCommand=function(self, params)
+        self.isJumping = true;
+        self.jumpTimer = 0;
+        self:decelerate( 1 ):y( _screen.h/2 - 100 )
+        self:accelerate( 1 ):y( _screen.h/2 )
+        self.isJumping = false;
+    end
 }
 
 main[#main+1] = Def.Sprite{
@@ -113,23 +115,18 @@ main[#main+1] = Def.Sound{
    end,
 }
 
+local numVerts = 10
+local function calcVertPosition(i) 
+    return {i * 30, gameState.t * 3 * math.abs(i - (numVerts / 2)), 0}
+end
 local function linestrip_demo(x, y)
-	-- Minimum verts: 2
-	-- Verts per group: 1
-	-- Vert diagram:
-	-- 1 - 2 - 3
-	--         |
-	-- 8       4
-	-- |       |
-	-- 7 - 6 - 5
-	local verts= {
-		{{-40, -40, 0}, Color.Red},
-		{{0, -40, 0}, Color.Orange},
-		{{40, -40, 0}, Color.Yellow},
-		{{40, 0, 0}, Color.Green},
-		{{40, 40, 0}, Color.Blue},
-		{{0, 40, 0}, Color.Purple},
-	}
+	
+	local verts = {}
+    local colors = {Color.Red, Color.Orange, Color.Green, Color.Blue, Color.Purple}
+    for i=1,numVerts do
+        table.insert(verts, {calcVertPosition(i), colors[math.mod(i, #colors)+1]})
+    end
+
 	return Def.ActorMultiVertex{
 		Name= "LineStrip",
 		InitCommand=
@@ -141,21 +138,21 @@ local function linestrip_demo(x, y)
 				self:visible(true)
                 self:SetLineWidth(1)
 				self:SetDrawState{First= 1, Num= -1}
-				--verts[1][1][2]= -40
-				--verts[4][1][1]= 40
-				--verts[6][1][2]= 40
-				--verts[8][1][1]= -40
                 
 				self:SetLineWidth(10)
 				self:SetVertices(verts)
 				self:finishtweening()
-				--self:queuecommand("FirstMove")
-				--self:queuecommand("SecondMove")
 			end,
         CustomUpdateCommand=
             function(self)
-                self:linear(1)
-                verts[1][1][2] = gameState.tick
+                --SM(gameState.tick)
+                --verts[1][1][2] = gameState.t * 100
+                for i=1,numVerts do
+                    local p = calcVertPosition(i);
+                    verts[i][1][1] = p[1]
+                    verts[i][1][2] = p[2]
+                end
+                self:linear(0.01)
                 self:SetVertices(verts)
             end,
 	}
