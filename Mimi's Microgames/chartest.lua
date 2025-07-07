@@ -19,6 +19,8 @@ local main = Def.ActorFrame{
             end
             if (gameState.t > 1) then
                 gameState.t = math.mod(gameState.tick, 1)
+                local coachleft = self:GetChild( "coachleft" )
+                coachleft:queuecommand( "SyncAnimation" ) 
             end
             --if (math.mod(gameState.tick, 1) == 0) then
                 local lineStrip = self:GetChild( "LineStrip" )
@@ -71,6 +73,7 @@ main[#main+1] = Def.Sprite{
         self:Center():diffusealpha(1)
     end,
     StepMessageCommand=function(self, params)
+        self:queuecommand( "Jump" ) 
     end,
     JumpCommand=function(self, params)
         self.isJumping = true;
@@ -86,16 +89,24 @@ main[#main+1] = Def.Sprite{
     Texture="coach 6x1.png",
     InitCommand=function(self)
         self:xy(SCREEN_CENTER_X-100, SCREEN_CENTER_Y)
-        local duration_between_frames = 0.2
+        self:queuecommand('SyncAnimation')
+    end,
+    SyncAnimationCommand=function(self,params)
+        local duration_between_frames = 1 / 10
         self:SetStateProperties({
             { Frame=0,  Delay=duration_between_frames},
             { Frame=1,  Delay=duration_between_frames},
             { Frame=2,  Delay=duration_between_frames},
             { Frame=3,  Delay=duration_between_frames},
             { Frame=4,  Delay=duration_between_frames},
-            { Frame=5,  Delay=duration_between_frames}
+            { Frame=5,  Delay=duration_between_frames},
+            { Frame=4,  Delay=duration_between_frames},
+            { Frame=3,  Delay=duration_between_frames},
+            { Frame=2,  Delay=duration_between_frames},
+            { Frame=1,  Delay=duration_between_frames}
         })
-    end,
+        self:SetSecondsIntoAnimation(0)
+    end
 }
 
 main[#main+1] = Def.Sound{
@@ -117,7 +128,7 @@ main[#main+1] = Def.Sound{
 
 local numVerts = 10
 local function calcVertPosition(i) 
-    return {i * 30, gameState.t * 3 * math.abs(i - (numVerts / 2)), 0}
+    return {i * 30, gameState.t * 3 * (5-math.abs(i - (numVerts / 2))), 0}
 end
 local function linestrip_demo(x, y)
 	
